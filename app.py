@@ -1,7 +1,7 @@
 import random
 import streamlit as st
 
-from logic_utils import check_guess
+from logic_utils import check_guess, new_game_state
 
 
 def get_range_for_difficulty(difficulty: str):
@@ -39,8 +39,6 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score + points
 
     if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            return current_score + 5
         return current_score - 5
 
     if outcome == "Too Low":
@@ -116,8 +114,8 @@ with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
-    st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    for key, value in new_game_state(low, high).items():
+        st.session_state[key] = value
     st.success("New game started.")
     st.rerun()
 
@@ -140,7 +138,7 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
-        # Fix (Claude + user): removed the `attempts % 2 == 0` branch that cast
+        # Fix: removed the `attempts % 2 == 0` branch that cast
         # the secret to a string on even turns. That stringification was the
         # root cause that triggered check_guess's old string-comparison path,
         # so the secret now stays an int for every guess.

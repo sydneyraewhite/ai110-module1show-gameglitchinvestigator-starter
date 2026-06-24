@@ -12,6 +12,29 @@ def parse_guess(raw: str):
     raise NotImplementedError("Refactor this function from app.py into logic_utils.py")
 
 
+def new_game_state(low: int, high: int, secret=None):
+    """
+    Return a fresh game-state dict for starting a new game.
+
+    Every field that the game guard depends on is reset here. In particular,
+    `status` is reset to "playing" — the bug was that the old "New Game" block
+    reset attempts/secret but forgot status, so a finished game ("won"/"lost")
+    stayed finished and immediately blocked play on the next round.
+
+    `secret` may be passed in for deterministic tests; otherwise it is drawn
+    from the inclusive [low, high] range for the current difficulty.
+    """
+    import random
+
+    return {
+        "secret": secret if secret is not None else random.randint(low, high),
+        "attempts": 1,
+        "score": 0,
+        "status": "playing",
+        "history": [],
+    }
+
+
 def check_guess(guess, secret):
     """
     Compare guess to secret and return (outcome, message).
